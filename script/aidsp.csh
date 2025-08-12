@@ -1,1 +1,1 @@
-startup/aidsp.csh
+startup_release/aidsp.csh

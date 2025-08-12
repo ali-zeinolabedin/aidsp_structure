@@ -1,1 +1,1 @@
-startup/pexit.csh
+startup_release/pexit.csh
