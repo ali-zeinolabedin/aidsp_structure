@@ -13,6 +13,7 @@ alias aidsp 'source /projects/BCI-HW-ASIC/AIDSP/script/aidsp.csh'
 alias pexit 'source /projects/BCI-HW-ASIC/AIDSP/script/pexit.csh'
 
 alias cdp    'cd /home/$USER/project/{$PRJ_DIR}/'
+alias cds    'cd /projects/'
 alias cdu    'cd ${PRJ_DIR}/units'
 alias cdi    'cd ${PRJ_DIR}'
 alias cdr    'cd ${PRJ_DIR}/regressions'
