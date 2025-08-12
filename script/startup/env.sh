@@ -9,8 +9,8 @@
 set cuser = `whoami`
 
 # Define the function to select a project
-alias aidsp 'source /projects/BCI-ASIC/AIDSP/script/aidsp.csh'
-alias pexit 'source /projects/BCI-ASIC/AIDSP/script/pexit.csh'
+alias aidsp 'source /projects/BCI-HW-ASIC/AIDSP/script/aidsp.csh'
+alias pexit 'source /projects/BCI-HW-ASIC/AIDSP/script/pexit.csh'
 
 alias cdp    'cd /home/$USER/project/{$PRJ_DIR}/'
 alias cdu    'cd ${PRJ_DIR}/units'
