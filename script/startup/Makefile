@@ -6,16 +6,10 @@
 # Version 1.0: 
 # ======================================================
 
-# Makefile to release the 'startup' folder to 'startup_release'
-
-# Makefile to release the 'startup' folder to 'startup_release'
-
 RELEASE_DIR=startup_release
 SRC_DIR=startup
 
-
 .PHONY: release clean install
-
 
 release:
 	@echo "Releasing $(SRC_DIR) to $(RELEASE_DIR) ..."
@@ -25,7 +19,6 @@ release:
 	@cp -r ./* ../$(RELEASE_DIR)
 	@chmod -R 755 ../$(RELEASE_DIR)
 	@echo "Release complete: $(RELEASE_DIR) created with permissions 755."
-
 
 clean:
 	@echo "Cleaning up release directory..."
