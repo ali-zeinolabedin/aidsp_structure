@@ -7,6 +7,7 @@
 # Created: 2025-08-11
 # Description: `aidsp` command to select the project
 # Version 2.0: 
+# - obsolete: replaced by icdeck.csh
 # - Added the ability to install the project if it does not exist
 # --- New function: install_project
 # --- New function: check_project
