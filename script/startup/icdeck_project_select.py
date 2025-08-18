@@ -183,7 +183,7 @@ def interactive_select(projects, default_color_name, quit_color_name):
     Exits if the user chooses 'q' or enters an invalid selection.
     """
     print_menu(projects, default_color_name, quit_color_name)
-    choice = ui_input("Enter the project index you want to navigate to, or 'q' to quit: ").strip()
+    choice = ui_input("Enter project index (ID) to navigate to, or 'q' to quit: ").strip()
     if choice.lower() == 'q':
         # Quit silently: no stdout so eval does nothing
         sys.exit(0)
