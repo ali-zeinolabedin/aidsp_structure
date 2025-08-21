@@ -69,7 +69,7 @@ alias b_white_echo   'printf "\033[1;37m%s\033[0m\n" \!*'
 
 
 # Use Python helper to select project and set variables
-eval `python3.6 /projects/BCI-HW-ASIC/ICDECK/script/startup/icdeck_project_select.py`
+eval `python3.6 /projects/BCI-HW-ASIC/ICDECK/script/release/icdeck_project_select.py`
 
 # --- Add these lines for debugging ---
 #echo "PROJECT is set to: $PROJECT"

@@ -50,6 +50,11 @@ root:
         - dir: "python"
           id: "env.python"
           optional: true
+          
+          children:
+            - dir: "makechip_export"
+              id: "env.python.makechip_export"
+              optional: true
 
         - dir: "regression"
           id: "env.regression"
