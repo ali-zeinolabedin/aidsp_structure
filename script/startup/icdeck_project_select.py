@@ -39,9 +39,9 @@ def print_banner(color_name='cyan'):
         pass  # Ignore if banner is missing
 
     # Add signature block below the banner
-    print(f"{color}  ICDECK v1.2a — Integrated Circuit Design & Engineering Collaboration  {reset}", file=tout)
-    print(f"{color}                   (C) 2025 Blackrock Neurotech                         {reset}", file=tout)
-    print(f"{color}        Author/Maintainer/Point of Contact: Ali Zeinolabedin            {reset}", file=tout)
+    print(f"{color}ICDECK v1.2a—Integrated Circuit Design & Engineering Collaboration Kernel  {reset}", file=tout)
+    #print(f"{color}                   (C) 2025 Blackrock Neurotech                         {reset}", file=tout)
+    print(f"{color}                        (C) Author: Ali Zeinolabedin                       {reset}", file=tout)
 
 
 # ---------- terminal helpers ----------
