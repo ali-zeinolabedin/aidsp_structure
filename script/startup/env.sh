@@ -10,7 +10,7 @@ set cuser = `whoami`
 
 # Define the function to select a project
 alias icdeck 'source /projects/BCI-HW-ASIC/ICDECK/script/icdeck.csh'
-alias pexit 'source /projects/BCI-HW-ASIC/ICDECK/script/pexit.csh'
+alias pexit  'source /projects/BCI-HW-ASIC/ICDECK/script/pexit.csh'
 
 alias cdp    'cd /home/$USER/project/{$PRJ_DIR}/'
 alias cds    'cd /projects/'
