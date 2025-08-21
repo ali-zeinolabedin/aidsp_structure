@@ -1,0 +1,41 @@
+# ======================================================
+# Script Name: projects.yaml
+# Author: Ali Zeinolabedin
+# Created: 2025-08-12
+# Description: Example YAML configuration for projects
+# Version1.0
+# ======================================================
+
+projects:
+  - name: "ASIC-W-ICONS"
+    path: "/home/$USER/project/ASIC-W-ICONS/Cadence/w_icons/"
+    git_url: "git@github.com:BlackrockNeurotech/ASIC-W-ICONS.git"
+    color: green
+  - name: "IMEC_Colibri"
+    path: "/projects/BCI-ASIC/BONSAI-V1.x/Colibri_digital/"
+    git_url: ""
+    color: green
+  - name: "BCI-HW-ASIC-BONSAI-V1.x: NEURALACE_VER1"
+    path: "/home/$USER/project/BCI-HW-ASIC-BONSAI-V1.x/NEURALACE_VER1"
+    git_url: git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V1.x.git
+    color: green
+  - name: "BCI-HW-ASIC-BONSAI-V1.x: NEURALACE_VER1.1"
+    path: "/home/$USER/project/BCI-HW-ASIC-BONSAI-V1.x/NEURALACE_VER1.1"
+    git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V1.x.git"
+    color: green
+  - name: "BCI-HW-ASIC-MT-FEP4x4"
+    path: "/home/$USER/project/BCI-HW-ASIC-MT-FEP4x4"
+    git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-MT-FEP4x4.git"
+    color: green
+  - name: "NEURALACE_VER2.0 (Not available yet)"
+    path: ""
+    git_url: ""
+    color: yellow
+  - name: "AIDSP (For test only)"
+    path: "/home/$USER/project/AIDSP"
+    git_url: "git@github.com:BlackrockNeurotech/AIDSP.git"
+    color: purple
+  #- name: "BCI-HW-ASIC-BONSAI-V1.x (For test only)"
+  #  path: "/home/$USER/project/test/BCI-HW-ASIC-BONSAI-V1.x/NEURALACE_VER1.1"
+  #  git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V1.x.git"
+  #  color: purple

@@ -1,0 +1,85 @@
+version: 1
+
+# Defaults (can be overridden by CLI --vars)
+defaults:
+  AUTHOR: "Ali Zeinolabedin"
+  LICENSE: "Proprietary"
+  sim: "cdssim"          # default simulation variant
+
+# Root node of the project
+root:
+  dir: "{{PROJECT}}"
+  files:
+    # You can always drop a common file too
+    - name: "README.md"
+      content: |
+        # Simulation for {{PROJECT}}
+        Variant: {{sim}}
+
+  children:
+    - dir: "global_src"
+      id: "global_src"         # can be toggled
+      optional: true
+
+    - dir: "units"
+      id: "units"
+      optional: true
+
+    - dir: "env"
+      children:
+        - dir: "coverage"      # always created if parent selected
+          id: "env.coverage"
+          optional: true
+
+        - dir: "datasheet"
+          id: "env.datasheet"
+          optional: true
+
+        - dir: "hal"
+          id: "env.hal"
+          optional: true
+
+        - dir: "icglue"
+          id: "env.icglue"
+          optional: true
+
+        - dir: "makechip_export"
+          id: "env.makechip_export"
+          optional: true
+
+        - dir: "python"
+          id: "env.python"
+          optional: true
+
+        - dir: "regression"
+          id: "env.regression"
+          optional: true
+
+        - dir: "simulation"
+          id: "env.simulation"
+          optional: true
+          files:
+            # One of these based on sim=...
+            - name: "Makefile.project.cdssim"
+              from: "_files/env/simulation/Makefile.project.cdssim"
+              only_if: "sim=cdssim"
+
+            - name: "Makefile.project.gtkwave"
+              from: "_files/env/simulation/Makefile.project.gtkwave"
+              only_if: "sim=gtkwave"
+            
+            - name: "Makefile.project.gtkwave"
+              from: "_files/env/simulation/Makefile.project.iverilog"
+              only_if: "sim=iverilog"
+
+            - name: "Makefile.project.modelsim"
+              from: "_files/env/simulation/Makefile.project.modelsim"
+              only_if: "sim=modelsim"
+
+            - name: "Makefile.project.simulation"
+              from: "_files/env/simulation/Makefile.project.simulation"
+              only_if: "sim=simulation"
+
+            - name: "Makefile.project.vivado"
+              from: "_files/env/simulation/Makefile.project.vivado"
+              only_if: "sim=vivado"

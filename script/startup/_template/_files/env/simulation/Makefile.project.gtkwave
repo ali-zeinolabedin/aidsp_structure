@@ -1,0 +1,29 @@
+#-------------------------------------
+#  Module: Makefile.project.gtkwave
+#  Author: Ali Zeinolabedin 
+#-------------------------------------
+
+# ------------  gtkwavefile & dumpfile  ----------------------------------------
+GTKWAVEFILE     ?= $(SIM_NAME).gtkw
+GTKWAVE_LOG     ?= $(WORK_DIR)/gtkwave.log
+DUMPFILE        ?= $(WORK_DIR)/$(SIM_NAME).dump
+DUMPFILENET     ?= $(WORK_DIR)/$(SIM_NAME).net.dump
+#===============================================================================
+# The following statements usually need not to be changed
+#===============================================================================
+# ------------  rules ----------------------------------------------------------
+gui:
+	$q$(call echo, "$${b}GUI $${c} $$(basename $(GTKWAVEFILE))")
+	$qgtkwave -a $(GTKWAVEFILE) -f $(DUMPFILE) -O $(GTKWAVE_LOG) &
+
+guinet:
+	$q$(call echo, "$${b}GUI $${c} $$(basename $(GTKWAVEFILE))")
+	$qgtkwave -a $(GTKWAVEFILE) -f $(DUMPFILENET) -O $(GTKWAVE_LOG) &
+
+
+clean-gui:
+	$qrm -f \
+        $(GTKWAVE_LOG)  \
+        2> /dev/null || true
+
+.PHONY: gui clean-gui netgui

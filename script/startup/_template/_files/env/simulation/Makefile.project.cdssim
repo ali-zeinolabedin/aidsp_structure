@@ -1,0 +1,373 @@
+#-------------------------------------------
+#  Module : Makefile.project.iverilog
+#  Author : Ali Zeinolabedin (based on stimc)
+#  Company: Blackrock Neurotech
+#-------------------------------------------
+
+# ------------  configuration parameters ---------------------------------------
+CDS_TOOL_SUITE ?= $(SIMULATOR)
+
+VLOG_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_vlog.log
+SVLOG_LOG     ?= $(WORK_DIR)/$(SIM_NAME)_svlog.log
+ELAB_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_elab.log
+SIM_LOG       ?= $(WORK_DIR)/$(SIM_NAME)_sim.log
+WAVE_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_wave.log
+XRUN_LOG	  ?= $(WORK_DIR)/$(SIM_NAME)_xrun.log
+SDF_LOG       ?= $(WORK_DIR)/$(SIM_NAME)_sdf.log
+SDF_STAT_LOG  ?= $(WORK_DIR)/$(SIM_NAME)_sdf_stats.log
+SDF_TDUMP_LOG ?= $(WORK_DIR)/$(SIM_NAME)_sdf_tdump.xml
+COV_LOG       ?= $(WORK_DIR)/$(SIM_NAME)_cov.log
+VHDL_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_vhdl.log
+
+VLOG_NET_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_vlog_net.log
+ELAB_NET_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_elab_net.log
+SIM_NET_LOG       ?= $(WORK_DIR)/$(SIM_NAME)_sim_net.log
+WAVE_NET_LOG      ?= $(WORK_DIR)/$(SIM_NAME)_wave_net.log
+
+DEFAULT_TIMESCALE ?= 1ns/1ps
+
+#===============================================================================
+# The following statements usually need not to be changed
+#===============================================================================
+
+ifeq ($(CDS_TOOL_SUITE),ius)
+  export CDS_PREFIX = nc
+else
+  export CDS_PREFIX = xm
+endif
+
+VLOG          = $(CDS_PREFIX)vlog
+SVLOG         = $(CDS_PREFIX)vlog -sv
+VHDL          = $(CDS_PREFIX)vhdl
+ELAB          = $(CDS_PREFIX)elab
+SIM           = $(CDS_PREFIX)sim
+WAVEBROWSE    = simvision
+XRUN          = xrun
+SDFC          = $(CDS_PREFIX)sdfc
+COV           = imc
+
+ECHO          = @echo -e
+# ------------  cdslib + directories  ------------------------------------------
+CDSLIB_FILE     = $(WORK_DIR)/cds.lib
+CDS_WORKLIBNAME = worklib
+CDS_WAVENAME    = simlibs
+CDS_COVNAME     = cov_work
+CSD_IMEC        = rtl_lib
+CDS_WORKLIBDIR  = $(WORK_DIR)/$(CDS_WORKLIBNAME)
+CDS_WAVEDIR     = $(WORK_DIR)/$(CDS_WAVENAME)
+CDS_COVDIR      = $(WORK_DIR)/$(CDS_COVNAME)
+CDS_SIMVISDIR   = $(WORK_DIR)/simvision
+HDLVAR_FILE     = $(WORK_DIR)/hdl.var
+
+CDS_WAVEDB_BASE = $(CDS_WAVEDIR)/waves
+CDS_WAVEDB      = $(CDS_WAVEDB_BASE).shm
+RUNSCR_BATCH    = $(WORK_DIR)/sim_ctrl_batch.tcl
+RUNSCR_GUI      = $(WORK_DIR)/sim_ctrl_gui.tcl
+
+# ------------  tool flags for vlog/elab  --------------------------------------
+VLOG_FLAGS       = -nocopyright -update 
+VLOG_FLAGS      += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE) 
+
+SVLOG_FLAGS      = -nocopyright -update 
+SVLOG_FLAGS      += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE)
+
+
+VHDL_FLAGS      = -nocopyright -update -v200x 
+VHDL_FLAGS      += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE)  -smartorder
+#-v200x 
+
+VLOG_FLAGS_NET   = -nocopyright -update  
+VLOG_FLAGS_NET  += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE) -define NTC -define RECREM 
+
+ifeq ($(GEN_VCD),1)
+	VLOG_FLAGS      += -define GEN_VCD
+	VLOG_FLAGS_NET  += -define GEN_VCD
+endif
+
+VLOG_SRC_ARGS   += $(addprefix -f ,$(VLOG_SRC_FILES))
+VLOG_SOURCES    += $(foreach f,$(VLOG_SRC_FILES), $(shell echo $(shell cat $f | sed -e 'sX^\(\#\|//\).*XX')))
+#$(info ${VLOG_SOURCES})
+
+SVLOG_SRC_ARGS   += $(addprefix -f ,$(SVLOG_SRC_FILES))
+SVLOG_SOURCES    += $(foreach f,$(SVLOG_SRC_FILES), $(shell echo $(shell cat $f | sed -e 'sX^\(\#\|//\).*XX')))
+#$(info ${SVLOG_SOURCES})
+
+VHDL_SRC_ARGS   += $(addprefix -f ,$(VHDL_SRC_FILES))
+VHDL_SOURCES    += $(foreach f,$(VHDL_SRC_FILES), $(shell echo $(shell cat $f | sed -e 'sX^\(\#\|//\).*XX')))
+
+VHDL_TBSRC_ARGS   += $(addprefix -f ,$(VHDL_TBSRC_FILES))
+VHDL_TBSOURCES    += $(foreach f,$(VHDL_TBSRC_FILES), $(shell echo $(shell cat $f | sed -e 'sX^\(\#\|//\).*XX')))
+#$(info ${VHDL_TBSOURCES})
+
+VLOG_SRC_ARGS_NET   += $(addprefix -f ,$(VLOG_SRC_FILES_NET))
+VLOG_SOURCES_NET    += $(foreach f,$(VLOG_SRC_FILES_NET), $(shell echo $(shell cat $f | sed -e 'sX^\(\#\|//\).*XX')))
+#$(info ${VLOG_SOURCES_NET})
+
+ELAB_FLAGS       = -nocopyright -licqueue -update -access +rwc -timescale $(DEFAULT_TIMESCALE) -NAMEMAP_MIXGEN
+ELAB_FLAGS      += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE)  -nowarn CUVWSB
+ELAB_FLAGS_NET   = -nocopyright -licqueue -update -access +rwc -timescale $(DEFAULT_TIMESCALE) 
+ELAB_FLAGS_NET  += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE)  -sdf_nopathedge -nowarn SDFNDP  -nowarn CUVWSP
+#WC: -nowarn CUVWSP -nowarn SDFNSB
+#BC: -nowarn SDFNDP
+
+SIM_FLAGS        = -nocopyright -licqueue -keyfile $(WORK_DIR)/$(SIM).script.tcl
+SIM_FLAGS       += -cdslib $(CDSLIB_FILE) -hdlvar $(HDLVAR_FILE)
+SIM_FLAGS       += -simvisargs "-title $(SIM_NAME)" +bus_conflict_off  -notimezeroasrtmsg
+
+SIM_FLAGS_NET   += $(SIM_FLAGS) -input ../common/tchecks.tcl
+
+$(info  ${CDS_SIM_COVERAGE})
+#TEST_NAME is updated by regression if we call the coverage from the regression script
+TEST_NAME ?= $(shell echo ${PWD} | sed -r -e 's|${PRJ_DIR}/units/([^/]+)/.*/([^/+]+)|\2|')
+#$(info  ${CDS_COVNAME})
+#$(info  ${TEST_NAME})
+ifeq ($(CDS_SIM_COVERAGE),1)
+	ELAB_FLAGS += -covfile ${PRJ_DIR}/env/coverage/cov.ccf
+	SIM_FLAGS  += -covoverwrite -covworkdir $(CDS_COVDIR) -covtest $(TEST_NAME)
+endif
+
+WAVE_FLAGS       = -nocopyright  -keyfile $(WORK_DIR)/$(WAVEBROWSE).script.tcl
+WAVE_FLAGS      += -cdslib $(CDSLIB_FILE) -title "$(SIM_NAME)"
+
+VLOG_TARGET      = $(VLOG_LOG)
+SVLOG_TARGET     = $(SVLOG_LOG)
+VHDL_TARGET      = $(VHDL_LOG)
+ELAB_TARGET      = $(ELAB_LOG)
+
+VLOG_NET_TARGET  = $(VLOG_NET_LOG)
+ELAB_NET_TARGET  = $(ELAB_NET_LOG)
+
+# coverage
+CDS_SIM_COVERAGE ?= 0
+
+# ------------  info output ----------------------------------------------------
+info-vlog:
+ifneq (,$(strip $(VLOG_INCDIRS)))
+	$q$(call echo, "$${b}$(vlogcolor)VLOG-INCDIRS$${c}$(shell $(call shell-fmtflags,$(addprefix -I,$(VLOG_INCDIRS))))")
+endif
+ifneq (,$(strip $(VLOG_FLAGS) $(ADDITIONAL_VLOG_FLAGS)))
+	$q$(call echo, "$${b}$(vlogcolor)VLOG-FLAGS$${c}$(shell $(call shell-fmtflags,$(VLOG_FLAGS) $(ADDITIONAL_VLOG_FLAGS)))")
+endif
+
+info-svlog:
+ifneq (,$(strip $(SVLOG_INCDIRS)))
+	$q$(call echo, "$${b}$(vlogcolor)SVLOG-INCDIRS$${c}$(shell $(call shell-fmtflags,$(addprefix -I,$(SVLOG_INCDIRS))))")
+endif
+ifneq (,$(strip $(SVLOG_FLAGS) $(ADDITIONAL_SVLOG_FLAGS)))
+	$q$(call echo, "$${b}$(vlogcolor)SVLOG-FLAGS$${c}$(shell $(call shell-fmtflags,$(SVLOG_FLAGS) $(ADDITIONAL_SVLOG_FLAGS)))")
+endif
+
+info-vhdl:
+ifneq (,$(strip $(VHDL_INCDIRS)))
+	$q$(call echo, "$${b}$(vlogcolor)VHDL-INCDIRS$${c}$(shell $(call shell-fmtflags,$(addprefix -I,$(VHDL_INCDIRS))))")
+endif
+ifneq (,$(strip $(VHDL_FLAGS) $(ADDITIONAL_VHDL_FLAGS)))
+	$q$(call echo, "$${b}$(vlogcolor)VHDL-FLAGS$${c}$(shell $(call shell-fmtflags,$(VHDL_FLAGS) $(ADDITIONAL_VHDL_FLAGS)))")
+endif
+
+info-vlog-net:
+ifneq (,$(strip $(VLOG_INCDIRS)))
+	$q$(call echo, "$${b}$(vlogcolor)VLOG-INCDIRS$${c}$(shell $(call shell-fmtflags,$(addprefix -I,$(VLOG_INCDIRS))))")
+endif
+ifneq (,$(strip $(VLOG_FLAGS) $(ADDITIONAL_VLOG_FLAGS)))
+	$q$(call echo, "$${b}$(vlogcolor)VLOG-FLAGS-NET$${c}$(shell $(call shell-fmtflags,$(VLOG_FLAGS_NET) $(ADDITIONAL_VLOG_FLAGS_NET)))")
+endif
+
+info-elab:
+ifneq (,$(strip $(ELAB_FLAGS) $(ADDITIONAL_ELAB_FLAGS)))
+	$q$(call echo, "$${b}$(elabcolor)ELAB-FLAGS$${c}$(shell $(call shell-fmtflags,$(ELAB_FLAGS) $(ADDITIONAL_ELAB_FLAGS)))")
+endif
+
+info-elab-net:
+ifneq (,$(strip $(ELAB_FLAGS) $(ADDITIONAL_ELAB_FLAGS)))
+	$q$(call echo, "$${b}$(elabcolor)ELAB-FLAGS-NET$${c}$(shell $(call shell-fmtflags,$(ELAB_FLAGS_NET) $(ADDITIONAL_ELAB_FLAGS_NET)))")
+endif
+
+info-sim:
+ifneq (,$(strip $(ELAB_FLAGS) $(ADDITIONAL_ELAB_FLAGS)))
+	$q$(call echo, "$${b}$(elabcolor)SIM-FLAGS$${c}$(shell $(call shell-fmtflags,$(SIM_FLAGS)))")
+endif
+
+info-sim-net:
+ifneq (,$(strip $(ELAB_FLAGS) $(ADDITIONAL_ELAB_FLAGS)))
+	$q$(call echo, "$${b}$(elabcolor)SIM-FLAGS-NET$${c}$(shell $(call shell-fmtflags,$(SIM_FLAGS_NET)))")
+endif
+
+.PHONY: info-vlog info-elab
+
+# ------------  rules ----------------------------------------------------------
+#-debug -gdb -gdbsh -clean
+xrun:$(VLOG_SOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vlog
+	$q$(XRUN) -ieee1364 -v93 -access +rwc  $(addprefix -incdir ,$(VLOG_INCDIRS)) $(addprefix -f ,$(VLOG_SRC_FILES))  -logfile $(XRUN_LOG) -tcl
+
+##
+imec_lib:$(VLOG_SOURCES) $(VHDL_SOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vlog
+	$q$(XRUN) -compile -makelib $(WORK_DIR)/rtl_lib $(addprefix -f ,$(VLOG_SRC_FILES)) -V200x  $(addprefix -f ,$(VHDL_SRC_FILES)) -endlib
+
+imec_lib1:$(VLOG_SOURCES) $(VHDL_SOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vlog
+	$(XRUN) -nocopyright -libverbose  $(addprefix -f ,$(VLOG_SRC_FILES)) -V200x $(addprefix -f ,$(VHDL_SRC_FILES)) $(addprefix -f ,$(VHDL_TBSOURCES)) -top TB1 
+
+
+imec: $(VHDL_TBSOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vlog
+	$(XRUN) -V200x  $(addprefix -f ,$(VHDL_TBSOURCES)) -logfile $(XRUN_LOG) -top TB1  
+
+##
+
+$(VLOG_TARGET): $(VLOG_SOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vlog
+	$q$(call echo, "$${b}$(vlogcolor)VLOG$${c} $(SIM_NAME)")
+	$q$(VLOG) $(addprefix -incdir ,$(VLOG_INCDIRS)) $(VLOG_FLAGS) -logfile $(VLOG_LOG) $(ADDITIONAL_VLOG_FLAGS) $(addprefix -f ,$(VLOG_SRC_FILES))
+
+$(SVLOG_TARGET): $(SVLOG_SOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-svlog
+	$q$(call echo, "$${b}$(vlogcolor)SVLOG$${c} $(SIM_NAME)")
+	$q$(SVLOG) $(addprefix -incdir ,$(SVLOG_INCDIRS)) $(SVLOG_FLAGS) -logfile $(SVLOG_LOG) $(ADDITIONAL_SVLOG_FLAGS) $(addprefix -f ,$(SVLOG_SRC_FILES))
+	
+$(VHDL_TARGET): $(VHDL_SOURCES) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vhdl
+	$q$(call echo, "$${b}$(vlogcolor)VHDL$${c} $(SIM_NAME)")
+	$(VHDL) $(addprefix -incdir ,$(VHDL_INCDIRS)) $(VHDL_FLAGS) -logfile $(VHDL_LOG) $(ADDITIONAL_VHDL_FLAGS) $(addprefix -f ,$(VHDL_SRC_FILES))
+
+$(ELAB_TARGET): $(VLOG_TARGET) $(SVLOG_TARGET) $(VHDL_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-elab
+	$q$(call echo, "$${b}$(elabcolor)ELAB$${c} $(SIM_NAME)")
+	$q$(ELAB) $(TOPLEVEL) $(ELAB_FLAGS) -logfile $(ELAB_LOG) $(ADDITIONAL_ELABFLAGS) 
+
+$(VLOG_NET_TARGET): $(VLOG_SOURCES_NET) $(COMPILE_DEPS) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-vlog-net
+	$q$(call echo, "$${b}$(vlogcolor)VLOG$${c} $(SIM_NAME)")
+	$q$(VLOG) $(addprefix -incdir ,$(VLOG_INCDIRS)) $(VLOG_FLAGS_NET) -logfile $(VLOG_NET_LOG) $(ADDITIONAL_VLOG_FLAGS_NET) $(addprefix -f ,$(VLOG_SRC_FILES_NET)) 
+
+$(ELAB_NET_TARGET): $(VLOG_NET_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) | $(WORK_DIR) info-elab-net
+	$q$(call echo, "$${b}$(elabcolor)ELAB-NET$${c} $(SIM_NAME)")
+	$q$(ELAB) $(TOPLEVEL) $(ELAB_FLAGS_NET) -logfile $(ELAB_NET_LOG) $(ADDITIONAL_ELAB_FLAGS_NET) $(ELAB_OPTS) -sdfstats $(SDF_STAT_LOG) -dumptiming $(SDF_TDUMP_LOG)
+
+vlog: $(VLOG_TARGET) $(SVLOG_TARGET)
+vhdl: $(VHDL_TARGET)
+elab:  $(ELAB_TARGET) 
+elabnet: sdfcompile $(ELAB_NET_TARGET)
+
+#+bus_conflict_off : to define an inline variable to disable pad error at the begining 
+
+run: $(ELAB_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_BATCH) | info-sim
+	$q$(call echo, "\n$${b}$(runcolor)RUN $${c} $(SIM_NAME)\n")
+	$q$(SIM) $(SIM_FLAGS) -logfile $(SIM_LOG) $(TOPLEVEL) -input $(RUNSCR_BATCH)  
+
+runnet: $(ELAB_NET_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_BATCH)
+	$q$(call echo, "\n$${b}$(run color)RUNNET $${c} $(SIM_NAME)\n")
+	$q$(SIM) -logfile $(SIM_NET_LOG) $(SIM_FLAGS_NET) $(TOPLEVEL) -input $(RUNSCR_BATCH)
+
+runnetbatch: $(ELAB_NET_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_BATCH)
+	$q$(call echo, "\n$${b}$(run color)RUNNETBATCH $${c} $(SIM_NAME)\n")
+	$q$(SIM) -logfile $(SIM_NET_LOG) $(SIM_FLAGS_NET) $(TOPLEVEL)  -input $(RUNSCR_BATCH) 2>&1 | tee $(BATCH_LOG)  
+
+memcheck: $(ELAB_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_BATCH)
+	$q$(call echo, "\n$${b}$(runcolor)MEMCHECK $${c} $(SIM_NAME)\n")
+	$q$(MEMCHK) $(SIM) $(SIM_FLAGS) $(TOPLEVEL) -input $(RUNSCR_BATCH)
+
+runbatch: $(ELAB_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_BATCH) | info-sim
+	$q$(call echo, "\n$${b}$(runcolor)RUNBATCH $${c} $(SIM_NAME)\n")
+	$q$(SIM) -logfile $(SIM_LOG) $(SIM_FLAGS) $(TOPLEVEL) -dumpstack -input $(RUNSCR_BATCH) 2>&1 | tee $(BATCH_LOG)
+
+runbatch_dump: runbatch
+
+rungui: $(ELAB_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_GUI) | $(CDS_SIMVISDIR) info-sim
+	$q$(call echo, "\n$${b}$(runcolor)RUN $${c} $(SIM_NAME)\n")
+	$q$(LN) $(CDS_SIMVISDIR) .simvision
+	$q$(SIM) -logfile $(SIM_LOG) $(SIM_FLAGS) -gui $(TOPLEVEL) -input $(RUNSCR_GUI) 2>&1 | tee $(BATCH_LOG)
+	$qrm .simvision
+
+runnetgui: $(ELAB_NET_TARGET) $(CDSLIB_FILE) $(HDLVAR_FILE) $(RUNSCR_GUI) | $(CDS_SIMVISDIR)
+	$q$(call echo, "\n$${b}$(runcolor)RUN $${c} $(SIM_NAME)\n")
+	$q$(LN) $(CDS_SIMVISDIR) .simvision
+	$q$(SIM) -logfile $(SIM_NET_LOG) $(SIM_FLAGS_NET) -gui $(TOPLEVEL) -input $(RUNSCR_GUI) 2>&1 | tee $(BATCH_LOG)
+	$qrm .simvision
+
+
+covgui:
+	$q$(call echo, "\n$${b}$(runcolor)Running $(COV) $${c} $(SIM_NAME)\n")
+	$(COV) -licqueue -logfile $(COV_LOG) -load $(CDS_COVDIR)/scope/$(TEST_NAME)
+
+covbatch:
+	$q$(call echo, "\n$${b}$(runcolor)Running $(COV) $${c} $(SIM_NAME)\n")
+	$(COV) -licqueue -logfile $(COV_LOG) -load $(CDS_COVDIR)/scope/$(TEST_NAME)  -batch
+
+runcov:
+	@make run CDS_SIM_COVERAGE=1
+
+runcovbatch:
+	@make runbatch_dump CDS_SIM_COVERAGE=1
+
+runcovgui:
+	@make runcov
+	@make covgui
+
+covmerge:
+	imc -exec ${PRJ_DIR}/env/coverage/merge_coverage.tcl
+
+gui: $(CDS_WAVEDB) | $(CDS_SIMVISDIR)
+	$q$(LN) $(CDS_SIMVISDIR) .simvision
+	$q$(WAVEBROWSE) $(WAVE_FLAGS) -logfile $(WAVE_NET_LOG) -snapshot $(TOPLEVEL) $(CDS_WAVEDB)
+	$qrm .simvision
+
+$(HDLVAR_FILE): $(CDSLIB_FILE) | $(WORK_DIR)
+	@echo 'DEFINE WORK worklibdir' > $@
+
+
+# thress last definitions for the VHDL simulation
+$(CDSLIB_FILE): | $(WORK_DIR) $(CDS_WORKLIBDIR) $(CDS_WAVEDIR) $(CDS_COVDIR)
+	@echo 'DEFINE worklibdir           $(CDS_WORKLIBNAME)' >  $@
+	@echo 'DEFINE wavedir              $(CDS_WAVENAME)'    >> $@
+	@echo 'DEFINE covdir               $(CDS_COVNAME)'     >> $@
+	@echo 'DEFINE cds_assertions       /tools/cadence/XCELIUM2403/tools.lnx86/inca/files/CDS_ASSERTIONS'     >> $@
+	@echo 'DEFINE std                  /tools/cadence/XCELIUM2403/tools.lnx86/inca/files/STD '               >> $@
+	@echo 'DEFINE ieee                 /tools/cadence/XCELIUM2403/tools.lnx86/inca/files/IEEE'               >> $@
+	@echo 'DEFINE synopsys             /tools/cadence/XCELIUM2403/tools.lnx86/inca/files/SYNOPSYS'           >> $@
+	
+	
+#@echo 'DEFINE Colibri_pkg /home/azeinolabedin/project/ASIC-NEURALACE/NEURALACE_VER1.1/units/imec_colibri/source/rtl/vhdl/' >> $@
+#DEFINE rtl_lib              rtl_lib	
+#@echo 'DEFINE cds_assertions       /tools/cadence/XCELIUM2403/tools.lnx86/inca/files/CDS_ASSERTIONS'     >> $@
+
+$(RUNSCR_BATCH): | $(WORK_DIR) $(CDS_WAVEDIR)
+	@echo 'database $(CDS_WAVEDB_BASE) -shm -default' >  $@
+	@echo 'run'                                       >> $@
+	@echo 'exit'                                      >> $@
+
+$(RUNSCR_GUI): | $(WORK_DIR) $(CDS_WAVEDIR)
+	@echo 'database $(CDS_WAVEDB_BASE) -shm -default' >  $@
+
+$(CDS_WORKLIBDIR) $(CDS_WAVEDIR) $(CDS_COVDIR) $(CDS_SIMVISDIR): | $(WORK_DIR)
+	$qmkdir -p $@
+
+########################################################################
+# sdfcompile
+########################################################################
+
+SDF_OUTPUTDIR  ?= ../common/work/sdf_files
+SDF_OPTS       ?= 
+
+#SDF_OPTS       ?= -nostdout
+# create sdf targets
+#$(info ${SDF_SOURCES})
+#$(info $(SDF_OUTPUTDIR)/$(notdir ${SDF_SOURCES}).compiled)
+
+sdfcompile: | $(WORK_DIR)
+	$q$(call echo, "$${c}")
+	$q$(call echo, "$(sdfcolor)$bCompiled SDF-Files$${c}")
+	$q$(call echo, "$(sdfcolor)$bSDFC $(SDF_SOURCES)$${c}")
+	$q$(SDFC) -nocopyright -messages -logfile $(SDF_LOG) $(SDF_OPTS) -output $(SDF_OUTPUTDIR)/$(notdir ${SDF_SOURCES}).compiled ${SDF_SOURCES} 
+	ln -sf $(SDF_OUTPUTDIR)/$(notdir ${SDF_SOURCES}).compiled
+
+	
+
+.PHONY: sdfcompile 
+########################################################################
+clean-vlog:
+	$qrm -f \
+        $(WAVE_LOG) $(SIM_LOG) $(VLOG_LOG) $(ELAB_LOG) \
+		$(CDSLIB_FILE) $(HDLVAR_FILE) \
+		$(RUNSCR_BATCH) $(RUNSCR_GUI) \
+        2> /dev/null || true
+	$qrm -rf \
+		$(CDS_WORKLIBDIR) $(CDS_WAVEDIR) $(CDS_COVDIR) $(CDS_SIMVISDIR)
+
+clean-gui:
+	$qrm -rf .simvision 2> /dev/null || true
+
+.PHONY: vlog elab run runbatch rungui gui memcheck clean-vlog clean-gui runbatch_dump

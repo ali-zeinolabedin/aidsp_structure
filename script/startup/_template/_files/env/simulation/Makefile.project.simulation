@@ -1,0 +1,135 @@
+#-------------------------------------------
+#  Module : Makefile.project.simulation
+#  Author : Ali Zeinolabedin (based on stimc)
+#  Company: Blackrock Neurotech
+#-------------------------------------------
+# Generic simulation makefile
+
+# ------------  default simulator  ---------------------------------------------
+SIMULATOR       ?= xcelium
+COVERAGE        ?= covered
+
+# ------------  dumpfile  ------------------------------------------------------
+DUMPFILE        ?= $(WORK_DIR)/$(SIM_NAME).dump
+DUMPFILENET     ?= $(WORK_DIR)/$(SIM_NAME).net.dump
+
+# ------------  configuration parameters ---------------------------------------
+DUMPER          ?= vcd
+BATCH_LOG       ?= $(WORK_DIR)/runbatch.log
+
+#-------------  working directory  ---------------------------------------------
+WORK_DIR        ?= .work.$(strip $(SIMULATOR))
+WORK_DIR_COV    ?= .work.$(strip $(COVERAGE))
+
+#===============================================================================
+# The following statements usually need not to be changed
+#===============================================================================
+
+USE_TEMP       ?= 1
+TMPDIR         ?= /tmp
+
+COMPILE_DEPS   ?= $(foreach incdir, $(INCLUDEDIRS), $(wildcard $(incdir)/*.vh))
+
+# ------------  build and run tools  -------------------------------------------
+LN              ?= ln -sf
+MKTEMP          ?= mktemp -p $(TMPDIR) -t $(USER)-$(SIMULATOR)-$(SIM_NAME)-XXXX
+MKTEMP_COV      ?= mktemp -p $(TMPDIR) -t $(USER)-$(COVERAGE)-$(SIM_NAME)-XXXX
+
+# ------------  output color/verbosity -----------------------------------------
+q?=@
+
+USE_COLOR ?= 1
+define echo
+	if [ -t 1 -a "x${USE_COLOR}" = "x1" ] ; then \
+		c='\e[0m'; \
+		b='\e[1m'; \
+		red='\e[31m'; \
+		green='\e[32m'; \
+		yellow='\e[33m'; \
+		blue='\e[34m'; \
+		purple='\e[35m'; \
+		cyan='\e[36m'; \
+		gray='\e[37m'; \
+	else \
+		c=''; \
+		b=''; \
+		red=''; \
+		green=''; \
+		yellow=''; \
+		blue=''; \
+		purple=''; \
+		cyan=''; \
+		gray=''; \
+	fi; \
+	echo -e $1;
+endef
+
+define shell-fmtflags
+	echo " $(strip $(1))" | sed -r -e 's/\s+-/\\n    -/g' -e 's#${PRJ_DIR}#$${PRJ_DIR}#g'
+endef
+
+vlogcolor=$${blue}
+elabcolor=$${green}
+stimccolor=$${yellow}
+sdfcolor=$${green}
+runcolor=""
+
+# ------------  rules ----------------------------------------------------------
+
+.DEFAULT_GOAL=rungui
+
+$(WORK_DIR):
+ifeq ($(USE_TEMP),1)
+	$q$(LN) `$(MKTEMP) -d` $(WORK_DIR)
+else
+	$qmkdir -p $(WORK_DIR)
+endif
+
+
+$(WORK_DIR_COV):
+ifeq ($(USE_TEMP),1)
+	$q$(LN) `$(MKTEMP) -d` $(WORK_DIR_COV)
+else
+	$qmkdir -p $(WORK_DIR_COV)
+endif
+
+clean: clean-vlog clean-gui
+	$qif [ -L $(WORK_DIR) ]; then  \
+		rm -Irf `readlink -e $(WORK_DIR)` ;\
+		rm $(WORK_DIR) ;\
+	elif [ -e $(WORK_DIR) ]; then \
+		rmdir $(WORK_DIR) 2>&1 > /dev/null || true ;\
+	fi
+	$qif [ -L $(WORK_DIR_COV) ]; then  \
+		rm -Irf `readlink -e $(WORK_DIR_COV)` ;\
+		rm $(WORK_DIR_COV) ;\
+	elif [ -e $(WORK_DIR_COV) ]; then \
+		rmdir $(WORK_DIR_COV) 2>&1 > /dev/null || true ;\
+	fi
+
+clean-all:
+	$q$(MAKE) SIMULATOR=iverilog --no-print-directory clean
+	
+
+.PHONY: clean
+
+
+#$(info "SIMULATOR $(SIMULATOR)")
+# sub makefiles
+ifeq ($(SIMULATOR),iverilog)
+include ${PRJ_DIR}/env/simulation/Makefile.project.gtkwave
+include ${PRJ_DIR}/env/simulation/Makefile.project.iverilog
+endif
+
+ifeq ($(SIMULATOR),modelsim)
+include ${PRJ_DIR}/env/simulation/Makefile.project.modelsim
+endif
+
+ifeq ($(SIMULATOR),xcelium)
+include ${PRJ_DIR}/env/simulation/Makefile.project.cdssim
+endif
+
+
+ifeq ($(SIMULATOR),vivado)
+include ${PRJ_DIR}/env/simulation/Makefile.project.vivado
+endif

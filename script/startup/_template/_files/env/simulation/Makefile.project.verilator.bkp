@@ -1,0 +1,67 @@
+#-------------------------------------
+#  Module: Makefile.project.iverilog
+#  Author: Ali Zeinolabedin
+#  Obsolete
+#-------------------------------------
+
+
+# ------------  configuration parameters ---------------------------------------
+LINT_LOG        ?= $(WORK_DIR)/lint.log
+
+
+#===============================================================================
+# The following statements usually need not to be changed
+#===============================================================================
+
+# ------------  build and run tools  -------------------------------------------
+VERILATOR       ?= verilator
+
+
+# ------------  tool flags for lint  --------------------------------------------
+VERILATOR_FLAGS_H  ?= -Wall -Wwarn-lint -Wwarn-style
+VERILATOR_FLAGS_L  ?= -Wno-fatal 
+
+# ------------  tool flags for iverilog  ---------------------------------------
+# added for being used in Verilator, it excludes all TB related files
+VLOG_SRC_NTB        += $(filter-out sources/tb.vlog.sources ,  $(VLOG_SRC_FILES))
+VLOG_SOURCES_NTB    += $(foreach f,$(VLOG_SRC_NTB), $(shell echo $(shell cat $f | sed -e 'sX^\(\#\|//\).*XX')))
+#$(info $(VLOG_SRC_FILES))
+#$(info $(VLOG_SRC_NTB))
+#$(info $(VLOG_SOURCES_NTB))
+# ------------  tool flags for stimc  ------------------------------------------
+
+
+# ------------  info output ----------------------------------------------------
+info-lint:
+ifneq (,$(strip $(VLOG_SOURCES_NTB) ))
+	$q$(call echo, "$${b}$(vlogcolor)VLOG-SOURCES$${c}")
+	$q$(foreach name,$(notdir $(VLOG_SOURCES_NTB)),echo "$(name)";)
+endif
+
+.PHONY: info-lint
+
+# ------------  rules ----------------------------------------------------------
+linth_batch: elab
+	$q$(call echo, "$${b}$(vlogcolor)LINT-CHECK$${c} ")
+	$q$(VERILATOR) $(VERILATOR_FLAGS_H) --lint-only $(VLOG_SOURCES_NTB) > $(LINT_LOG) 2>&1
+
+lintl_batch: elab
+	$q$(call echo, "$${b}$(vlogcolor)LINT-CHECK$${c} ")
+	$q$(VERILATOR) $(VERILATOR_FLAGS_L) --lint-only $(VLOG_SOURCES_NTB) > $(LINT_LOG) 2>&1
+
+linth: elab
+	$q$(call echo, "$${b}$(vlogcolor)LINT-CHECK$${c} ")
+	$q$(VERILATOR) $(VERILATOR_FLAGS_H) --lint-only $(VLOG_SOURCES_NTB) 
+
+lintl: elab
+	$q$(call echo, "$${b}$(vlogcolor)LINT-CHECK$${c} ")
+	$q$(VERILATOR) $(VERILATOR_FLAGS_L) --lint-only $(VLOG_SOURCES_NTB) 
+
+
+#$(info $(MAKEFILE_LIST))
+#$(info $(DUMP_MOD_NAME))
+test:
+	$(info ""Ali"")
+	$(info $(DUMPMODE))
+
+.PHONY:  clean-vlog

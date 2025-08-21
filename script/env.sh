@@ -1,1 +1,1 @@
-startup_release/env.sh
+release/env.sh
