@@ -27,10 +27,10 @@ projects:
     path: "/home/$USER/project/BCI-HW-ASIC-MT-FEP4x4"
     git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-MT-FEP4x4.git"
     color: green
-  - name: "NEURALACE_VER2.0 (Not available yet)"
-    path: ""
-    git_url: ""
-    color: yellow
+  - name: "BCI-HW-ASIC-BONSAI-V2.0"
+    path: "/home/$USER/project/BCI-HW-ASIC-BONSAI-V2.0"
+    git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V2.0.git"
+    color: green
   - name: "AIDSP (For test only)"
     path: "/home/$USER/project/AIDSP"
     git_url: "git@github.com:BlackrockNeurotech/AIDSP.git"
