@@ -31,11 +31,7 @@ projects:
     path: "/home/$USER/project/BCI-HW-ASIC-BONSAI-V2.0"
     git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V2.0.git"
     color: green
-  - name: "AIDSP (For test only)"
-    path: "/home/$USER/project/AIDSP"
-    git_url: "git@github.com:BlackrockNeurotech/AIDSP.git"
-    color: purple
-  #- name: "BCI-HW-ASIC-BONSAI-V1.x (For test only)"
-  #  path: "/home/$USER/project/test/BCI-HW-ASIC-BONSAI-V1.x/NEURALACE_VER1.1"
-  #  git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V1.x.git"
-  #  color: purple
+  - name: "BCI-HW-FPGA-CALLISTO"
+    path: "/home/$USER/project/BCI-HW-FPGA-CALLISTO"
+    git_url: "git@github.com:BlackrockNeurotech/BCI-HW-FPGA-CALLISTO.git"
+    color: green

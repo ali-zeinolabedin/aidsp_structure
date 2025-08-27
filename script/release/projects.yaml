@@ -31,3 +31,7 @@ projects:
     path: "/home/$USER/project/BCI-HW-ASIC-BONSAI-V2.0"
     git_url: "git@github.com:BlackrockNeurotech/BCI-HW-ASIC-BONSAI-V2.0.git"
     color: green
+  - name: "BCI-HW-FPGA-CALLISTO"
+    path: "/home/$USER/project/BCI-HW-FPGA-CALLISTO"
+    git_url: "git@github.com:BlackrockNeurotech/BCI-HW-FPGA-CALLISTO.git"
+    color: green
